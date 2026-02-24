@@ -1,0 +1,22 @@
+# Secrets (IMPORTANT)
+.env
+
+# Environnement virtuel
+venv/
+env/
+.venv/
+
+# Python (fichiers compilés inutiles)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# IDE (VS Code, PyCharm)
+.vscode/
+.idea/
