@@ -23,11 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-load_dotenv()  # Charger les variables d'environnement depuis le fichier .env
+load_dotenv(BASE_DIR / ".env")  # Charger les variables d'environnement depuis le fichier .env
 SECRET_KEY = os.getenv('SECRET_KEY')
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = os.getenv('DEBUG', 'False').strip().lower() == 'true'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
@@ -86,7 +85,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
         'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT'),
     }
 }
