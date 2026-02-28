@@ -1,13 +1,16 @@
 # Secrets (IMPORTANT)
 .env
+paw_backend/.env
 
-# Environnement virtuel
+# Environnement virtuel (Le coupable 🛑)
 venv/
 env/
 .venv/
+paw_backend/venv/
 
 # Python (fichiers compilés inutiles)
 __pycache__/
+*/__pycache__/
 *.pyc
 *.pyo
 *.pyd
