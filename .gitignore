@@ -7,14 +7,6 @@ paw_backend/venv/
 
 #Data & IA
 
-#On ignore le contenu des dossiers de données, mais pas les dossiers eux-mêmes
-paw_data/donnees_brutes/*
-paw_data/donnees_propres/*
-
-# On garde les dossiers vides grâce aux .gitkeep (si tu en mets)
-!paw_data/donnees_brutes/.gitkeep
-!paw_data/donnees_propres/.gitkeep
-
 # On bloque tous les fichiers de données lourds et modèles IA
 *.csv
 *.joblib
