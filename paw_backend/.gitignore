@@ -17,11 +17,6 @@ db.sqlite3
 media/
 staticfiles/
 
-# --- PARTIE DATA ---
-paw_data/donnees_brutes/*
-paw_data/donnees_propres/*
-*.csv
-*.joblib
 
 # IDE (VS Code, PyCharm)
 .vscode/
