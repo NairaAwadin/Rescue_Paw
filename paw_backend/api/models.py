@@ -48,12 +48,12 @@ class ProfilAdoptant(models.Model):
 
     # Données "Froides" (Habitat)
     zip_code = models.CharField(max_length=5)
-    type_habitat = models.CharField(max_length=20, choices=[('APT', 'Appartement'), ('HOUSE', 'Maison')])
+    type_habitat = models.CharField(max_length=20, choices=[('APT', 'Appartement'), ('HOUSE', 'Maison'), ('FARM', 'Ferme')], default='APT')
     has_garden = models.BooleanField(default=False)
 
     # Données "Chaudes" (Le Quiz - pour la Similarité Cosinus)
     # On stocke ces valeurs pour le calcul de distance avec le profil de l'animal
-    niv_activite = models.IntegerField("Niveau d'activité (1-10)", default=5)
+    niv_activite = models.IntegerField("Niveau d'activité (1-3)", default=1) # 1=sédentaire, 3=très actif
     has_children = models.BooleanField("Présence d'enfants", default=False)
     has_pets = models.BooleanField("Autres animaux", default=False)
     temps_dispo = models.IntegerField("Temps disponible (heures/jour)", default=2)
