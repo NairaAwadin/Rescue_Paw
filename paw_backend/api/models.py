@@ -48,14 +48,20 @@ class ProfilAdoptant(models.Model):
 
     # Données "Froides" (Habitat)
     zip_code = models.CharField(max_length=5)
-    type_habitat = models.CharField(max_length=20, choices=[('APT', 'Appartement'), ('HOUSE', 'Maison')])
+    type_habitat = models.CharField(max_length=20, choices=[('APT', 'Appartement'), ('HOUSE', 'Maison'), ('FARM', 'Ferme')], default='APT')
     has_garden = models.BooleanField(default=False)
 
     # Données "Chaudes" (Le Quiz - pour la Similarité Cosinus)
     # On stocke ces valeurs pour le calcul de distance avec le profil de l'animal
-    niv_activite = models.IntegerField("Niveau d'activité (1-10)", default=5)
+    niv_activite = models.IntegerField("Niveau d'activité (1-3)", default=1) # 1=sédentaire, 3=très actif
     has_children = models.BooleanField("Présence d'enfants", default=False)
+
     has_pets = models.BooleanField("Autres animaux", default=False)
+    has_birds = models.BooleanField("Oiseaux", default=False)    
+    has_cats = models.BooleanField("Chats", default=False)      
+    has_dogs = models.BooleanField("Chiens", default=False)     
+    has_rodents = models.BooleanField("Rongeurs", default=False)
+
     temps_dispo = models.IntegerField("Temps disponible (heures/jour)", default=2)
     niv_experience = models.IntegerField("Expérience (1-3)", default=1) # Débutant à Expert
 
@@ -82,6 +88,11 @@ class Animal(models.Model):
 
     # Caractéristiques pour le matching IA (Hard Constraints & Affinity)
     age = models.IntegerField()
+    age_category = models.CharField(
+        max_length=10,
+        choices=[('puppy', 'Chiot'), ('adult', 'Adulte'), ('senior', 'Senior')],
+        default='adult'
+    )
     taille = models.CharField(max_length=10, choices=[('S', 'Petit'), ('M', 'Moyen'), ('L', 'Grand')])
     energy_need = models.IntegerField(default=5) # Match avec activity_level de l'adoptant
     social_compatibility = models.BooleanField(default=True) # Match avec has_other_pets
