@@ -13,18 +13,15 @@ OUTPUT_FILE = DATA_DIR / "training_matching.csv"
 # ============================================================================
 
 def map_taille(taille_text):
-    """Convertit taille textuelle → code Django"""
+    """Convertit taille textuelle → code Django (S/M/L)"""
     mapping = {
         'Small': 'S',
+        'Toy': 'S',
         'Medium': 'M',
         'Large': 'L',
         'XLarge': 'L'
     }
     return mapping.get(taille_text, 'M')
-
-HABITAT_LABELS = {'APT': 'Appartement', 'HOUSE': 'Maison', 'FARM': 'Ferme'}
-SPECIES_LABELS = {'DOG': 'Chien', 'CAT': 'Chat'}
-TAILLE_LABELS = {'S': 'Petit', 'M': 'Moyen', 'L': 'Grand'}
 
 # ============================================================================
 # CHARGER LES DONNÉES
@@ -55,13 +52,13 @@ bien_etre_df = pd.read_csv(DATA_DIR / "villes_scored_final.csv")
 print(f"  ✓ Bien-être: {len(bien_etre_df)} communes notées")
 
 # ============================================================================
-# GÉNÉRER 500 PROFILS ADOPTANTS
+# GÉNÉRER 2500 PROFILS ADOPTANTS
 # ============================================================================
 
-print("\n👥 Génération de 500 profils adoptants...")
+print("\n👥 Génération de 2500 profils adoptants...")
 
 adoptants = []
-for i in range(500):
+for i in range(2500):
     type_habitat = np.random.choice(['APT', 'HOUSE', 'FARM'])
     has_garden = type_habitat in ['HOUSE', 'FARM'] and np.random.random() > 0.3
     niv_activite = np.random.randint(1, 4)
@@ -80,10 +77,10 @@ for i in range(500):
     else:
         note_bien_etre = 'C'
     
-    a_oiseaux = has_pets and np.random.random() > 0.7
-    a_rongeurs = has_pets and np.random.random() > 0.7
-    a_chats = has_pets and np.random.random() > 0.5
-    a_chiens = has_pets and np.random.random() > 0.5
+    has_birds = has_pets and np.random.random() > 0.7
+    has_rodents = has_pets and np.random.random() > 0.7
+    has_cats = has_pets and np.random.random() > 0.5
+    has_dogs = has_pets and np.random.random() > 0.5
     
     adoptants.append({
         'id_adoptant': i,
@@ -97,10 +94,10 @@ for i in range(500):
         'code_postal': code_postal,
         'code_commune_insee': code_insee,
         'note_bien_etre': note_bien_etre,
-        'a_oiseaux': a_oiseaux,
-        'a_rongeurs': a_rongeurs,
-        'a_chats': a_chats,
-        'a_chiens': a_chiens,
+        'has_birds': has_birds,
+        'has_rodents': has_rodents,
+        'has_cats': has_cats,
+        'has_dogs': has_dogs,
     })
 
 adoptants_df = pd.DataFrame(adoptants)
@@ -127,6 +124,7 @@ for idx, row in animaux_df.iterrows():
     energy_need = max(1, int(energy_level * 10))
     
     demeanor = row.get('demeanor_value', 0.5)
+    trainability = row.get('trainability_value', 0.5)
     social_compatibility = demeanor >= 0.5
     kid_friendly = demeanor >= 0.4
     needs_garden = energy_need >= 7 and row.get('species') == 'dog'
@@ -145,7 +143,7 @@ for idx, row in animaux_df.iterrows():
         'kid_friendly': kid_friendly,
         'needs_garden': needs_garden,
         'demeanor_value': demeanor,
-        'trainability_value': row.get('trainability_value', 0.5),
+        'trainability_value': trainability,
         'grooming_frequency_value': row.get('grooming_frequency_value', 0.5),
     })
 
@@ -153,182 +151,226 @@ animaux_enrichis_df = pd.DataFrame(animaux_enrichis)
 print(f"  ✓ {len(animaux_enrichis_df)} animaux générés")
 
 # ============================================================================
-# FONCTION DE MATCHING AVEC 8 CONTRAINTES (RESSERRÉES)
+# FONCTIONS DE SCORING
 # ============================================================================
+
+def calculate_energy_score(adoptant_niv_activite, animal_energy_level_value):
+    """Score affinité énergie (0-10)"""
+    adoptant_energy = (adoptant_niv_activite - 1) / 2.0
+    difference = abs(adoptant_energy - animal_energy_level_value)
+    score = 10 * (1 - difference)
+    return max(0, min(10, score))
+
+def calculate_trainability_score(adoptant_niv_experience, animal_trainability_value):
+    """Score affinité entraînabilité (0-10)"""
+    adoptant_experience = (adoptant_niv_experience - 1) / 2.0
+    difference = abs(adoptant_experience - animal_trainability_value)
+    score = 10 * (1 - difference)
+    return max(0, min(10, score))
+
+def calculate_age_size_habitat_score(adoptant, animal):
+    """Score composite âge+taille+habitat (0-10)"""
+    score = 5.0
+    
+    if animal['age_category'] == 'puppy':
+        if adoptant['niv_experience'] == 1 and adoptant['temps_dispo'] < 3:
+            score -= 3.0
+        elif adoptant['niv_experience'] >= 2 and adoptant['temps_dispo'] >= 3:
+            score += 2.0
+    
+    if animal['taille_categorie'] in ['Large', 'XLarge']:
+        if adoptant['type_habitat'] == 'APT' and not adoptant['has_garden']:
+            score -= 3.0
+        elif adoptant['type_habitat'] == 'FARM' or (adoptant['type_habitat'] == 'HOUSE' and adoptant['has_garden']):
+            score += 1.5
+    
+    if animal['taille_categorie'] in ['Small', 'Toy']:
+        if adoptant['type_habitat'] == 'APT':
+            score += 1.0
+    
+    if adoptant['temps_dispo'] >= 4:
+        if animal['energy_need'] >= 8:
+            score += 1.5
+    elif adoptant['temps_dispo'] <= 2:
+        if animal['energy_need'] >= 8:
+            score -= 2.0
+    
+    return max(0, min(10, score))
+
+def calculate_wellbeing_territory_score(adoptant_note_bien_etre, animal_energy_need):
+    """Score bien-être territorial (0-10)"""
+    wellbeing_map = {'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1}
+    wellbeing_val = wellbeing_map.get(adoptant_note_bien_etre, 3)
+    
+    if animal_energy_need >= 8:
+        if wellbeing_val >= 4:
+            score = 8.0
+        elif wellbeing_val == 3:
+            score = 6.0
+        else:
+            score = 3.0
+    else:
+        score = 5.0 + wellbeing_val * 0.5
+    
+    return max(0, min(10, score))
+
+def calculate_kids_demeanor_score(adoptant_has_children, animal_demeanor_value):
+    """Score enfants/tempérament (0-10)"""
+    if not adoptant_has_children:
+        return 5.0
+    
+    if animal_demeanor_value >= 0.6:
+        score = 8.0 + (animal_demeanor_value - 0.6) * 5
+    elif animal_demeanor_value >= 0.4:
+        score = 5.0
+    else:
+        score = 2.0
+    
+    return max(0, min(10, score))
+
+def calculate_sociability_other_pets_score(adoptant_has_pets, animal_social_compatibility):
+    """Score sociabilité autres animaux (0-10)"""
+    if not adoptant_has_pets:
+        return 5.0
+    
+    if animal_social_compatibility:
+        return 8.0
+    else:
+        return 3.0
 
 def evaluer_match(adoptant, animal):
-    """Évalue match - CONTRAINTES ÉQUILIBRÉES"""
+    """
+    Évalue le match avec HARD CONSTRAINTS + SOFT SCORES
     
+    Retourne: (est_match, match_score)
+    """
+    
+    # === HARD CONSTRAINTS ===
     if animal['species'] == 'cat':
-        if adoptant.get('a_oiseaux') or adoptant.get('a_rongeurs'):
-            return 0
-        return 1
+        if adoptant.get('has_birds') or adoptant.get('has_rodents'):
+            return 0, 0
+        return 1, 8.0
     
     if animal['species'] == 'dog':
-        # CONTRAINTE 1: Petit apt SANS jardin + grand chien énergique
+        # Apt + large + sans jardin + très énergique
         if adoptant['type_habitat'] == 'APT' and not adoptant['has_garden']:
             if animal['taille_categorie'] in ['Large', 'XLarge'] and animal['energy_level_value'] >= 0.7:
-                return 0
+                return 0, 2
         
-        # CONTRAINTE 2: Peu de temps + chien très énergique
-        if adoptant['temps_dispo'] <= 2 and animal['energy_level_value'] >= 0.75:  # ← relâché à 0.75
-            return 0
+        # Peu de temps + très énergique
+        if adoptant['temps_dispo'] <= 2 and animal['energy_level_value'] >= 0.75:
+            return 0, 1
         
-        # CONTRAINTE 3: Débutant + chien difficile
-        if adoptant['niv_experience'] == 1:
-            if animal['trainability_value'] < 0.45:  # ← 0.45 au lieu de 0.5
-                return 0
-        
-        # CONTRAINTE 4: Commune D/E + chien très actif
+        # Commune D/E + très énergique
         note_bien_etre = adoptant.get('note_bien_etre', 'C')
-        if note_bien_etre in ['D', 'E']:  # ← enlever C, garder D/E seulement
-            if animal['energy_level_value'] >= 0.75:  # ← relâché à 0.75
-                return 0
-        
-        # CONTRAINTE 5: Enfants + chien agressif
-        if adoptant['has_children']:
-            if animal['demeanor_value'] < 0.45:  # ← 0.45
-                return 0
-        
-        # CONTRAINTE 6: Autres animaux + chien réservé
-        if adoptant['has_pets']:
-            if animal['demeanor_value'] < 0.4:  # ← revenir à 0.4
-                return 0
-        
-        # CONTRAINTE 7: Chiot + débutant + peu de temps
-        if animal['age_category'] == 'puppy':
-            if adoptant['niv_experience'] == 1 and adoptant['temps_dispo'] < 3:
-                return 0
-        
-        # CONTRAINTE 8: Niv activité faible + chien très énergique
-        if adoptant['niv_activite'] == 1:
-            if animal['energy_level_value'] >= 0.8:  # ← très élevé pour être rare
-                return 0
+        if note_bien_etre in ['D', 'E']:
+            if animal['energy_level_value'] >= 0.75:
+                return 0, 2
     
-    return 1
-    
-    # CONTRAINTE 1: Chat + oiseaux/rongeurs
-    if animal['species'] == 'cat':
-        if adoptant.get('a_oiseaux') or adoptant.get('a_rongeurs'):
-            return 0
-        return 1
-    
+    # === SOFT SCORES ===
     if animal['species'] == 'dog':
-        # CONTRAINTE 2: Petit apt SANS jardin + chien énergique (PLUS STRICT)
-        if adoptant['type_habitat'] == 'APT' and not adoptant['has_garden']:
-            if animal['energy_level_value'] >= 0.5:  # ← était 0.6, maintenant 0.5
-                return 0
+        score_energy = calculate_energy_score(adoptant['niv_activite'], animal['energy_level_value'])
+        score_trainability = calculate_trainability_score(adoptant['niv_experience'], animal['trainability_value'])
+        score_age_size_habitat = calculate_age_size_habitat_score(adoptant, animal)
+        score_wellbeing = calculate_wellbeing_territory_score(adoptant['note_bien_etre'], animal['energy_need'])
+        score_kids = calculate_kids_demeanor_score(adoptant['has_children'], animal['demeanor_value'])
+        score_sociability = calculate_sociability_other_pets_score(adoptant['has_pets'], animal['social_compatibility'])
         
-        # CONTRAINTE 3: Peu de temps + chien énergique (PLUS STRICT)
-        if adoptant['temps_dispo'] <= 2 and animal['energy_level_value'] >= 0.6:  # ← était 0.7
-            return 0
+        match_score = (
+            score_energy * 0.25 +
+            score_trainability * 0.20 +
+            score_age_size_habitat * 0.20 +
+            score_wellbeing * 0.10 +
+            score_kids * 0.15 +
+            score_sociability * 0.10
+        )
         
-        # CONTRAINTE 4: Débutant + chien difficile (PLUS STRICT)
-        if adoptant['niv_experience'] == 1:
-            if animal['trainability_value'] < 0.5:  # ← était 0.4
-                return 0
+        if match_score < 3.5:
+            return 0, match_score
         
-        # CONTRAINTE 5: Commune C/D/E + chien actif (PLUS STRICT - ajout C!)
-        note_bien_etre = adoptant.get('note_bien_etre', 'C')
-        if note_bien_etre in ['C', 'D', 'E']:  # ← était D/E, maintenant + C
-            if animal['energy_level_value'] >= 0.6:  # ← était 0.7
-                return 0
-        
-        # CONTRAINTE 6: Enfants + chien agressif
-        if adoptant['has_children']:
-            if animal['demeanor_value'] < 0.5:  # ← était 0.4
-                return 0
-        
-        # CONTRAINTE 7: Autres animaux + chien réservé
-        if adoptant['has_pets']:
-            if animal['demeanor_value'] < 0.5:  # ← était 0.3
-                return 0
-        
-        # CONTRAINTE 8: Petit apt SANS jardin + chien Large/XLarge (NOUVELLE)
-        if adoptant['type_habitat'] == 'APT' and not adoptant['has_garden']:
-            if animal['taille_categorie'] in ['Large', 'XLarge']:
-                return 0
-        
-        # CONTRAINTE 9: Niv activité faible + chien très énergique (NOUVELLE)
-        if adoptant['niv_activite'] == 1:  # Sédentaire
-            if animal['energy_level_value'] >= 0.6:
-                return 0
+        return 1, match_score
     
-    return 1
+    return 1, 5.0
+
 # ============================================================================
-# GÉNÉRER 1000 PAIRES EN BOUCLE JUSQU'À 45%+ NON-MATCHES
+# GÉNÉRER 5000 PAIRES AVEC SCORES - BOUCLE JUSQU'À > 40% NON-MATCHES
 # ============================================================================
 
-print("\n🔗 Génération de paires matching (cible: >45% non-matches)...")
+print("\n🔗 Génération de 5000 paires matching (cible: >40% non-matches)...")
 
 non_match_ratio = 0
 attempt = 1
 
-while non_match_ratio < 0.45:
+while non_match_ratio < 0.20:
     print(f"\n  Tentative {attempt}...")
     
     matchings = []
+    id_matching = 0
+    
     for adoptant_idx, adoptant in adoptants_df.iterrows():
         for _ in range(2):
             animal_idx = np.random.randint(0, len(animaux_enrichis_df))
             animal = animaux_enrichis_df.iloc[animal_idx]
             
-            est_match = evaluer_match(adoptant.to_dict(), animal.to_dict())
+            est_match, match_score = evaluer_match(adoptant.to_dict(), animal.to_dict())
             
             # Conversion aux labels Django
-            species_code = animal['species'].upper()  # 'dog' → 'DOG'
-            taille_code = map_taille(animal['taille_categorie'])  # 'Medium' → 'M'
+            species_code = animal['species'].upper()
+            taille_code = map_taille(animal['taille_categorie'])
             
             matching = {
-                'id_matching': len(matchings),
-                'id_adoptant': adoptant['id_adoptant'],
-                'id_animal': animal['id_animal'],
+                'id_matching': id_matching,
+                'id_adoptant': int(adoptant['id_adoptant']),
+                'id_animal': int(animal['id_animal']),
                 'est_match': est_match,
-                # Adoptant fields (avec labels)
+                'match_score': round(match_score, 2),
                 'type_habitat': adoptant['type_habitat'],
-                'type_habitat_label': HABITAT_LABELS[adoptant['type_habitat']],
-                'has_garden': adoptant['has_garden'],
-                'niv_activite': adoptant['niv_activite'],
-                'has_children': adoptant['has_children'],
-                'has_pets': adoptant['has_pets'],
-                'temps_dispo': adoptant['temps_dispo'],
-                'niv_experience': adoptant['niv_experience'],
+                'has_garden': int(adoptant['has_garden']),
+                'niv_activite': int(adoptant['niv_activite']),
+                'has_children': int(adoptant['has_children']),
+                'has_pets': int(adoptant['has_pets']),
+                'has_birds': int(adoptant['has_birds']),
+                'has_rodents': int(adoptant['has_rodents']),
+                'has_cats': int(adoptant['has_cats']),
+                'has_dogs': int(adoptant['has_dogs']),
+                'temps_dispo': int(adoptant['temps_dispo']),
+                'niv_experience': int(adoptant['niv_experience']),
                 'code_postal': adoptant['code_postal'],
                 'note_bien_etre': adoptant['note_bien_etre'],
-                # Animal fields (avec labels + codes Django)
-                'age': animal['age'],
+                'age': int(animal['age']),
                 'age_category': animal['age_category'],
                 'species': species_code,
-                'species_label': SPECIES_LABELS[species_code],
                 'race': animal['race'],
                 'taille': taille_code,
-                'taille_label': TAILLE_LABELS[taille_code],
-                'energy_need': animal['energy_need'],
-                'social_compatibility': animal['social_compatibility'],
-                'kid_friendly': animal['kid_friendly'],
-                'needs_garden': animal['needs_garden'],
+                'energy_need': int(animal['energy_need']),
+                'social_compatibility': int(animal['social_compatibility']),
+                'kid_friendly': int(animal['kid_friendly']),
+                'needs_garden': int(animal['needs_garden']),
             }
             matchings.append(matching)
+            id_matching += 1
     
     matchings_df = pd.DataFrame(matchings)
     non_match_ratio = (1 - matchings_df['est_match'].mean())
     
     print(f"    ✓ {len(matchings_df)} paires | {100*non_match_ratio:.1f}% non-matches")
     
-    if non_match_ratio < 0.45:
-        print(f"    ✗ Ratio trop bas ({100*non_match_ratio:.1f}% < 45%) - Nouvelle tentative...")
+    if non_match_ratio < 0.40:
+        print(f"    ✗ Ratio trop bas ({100*non_match_ratio:.1f}% < 40%) - Nouvelle tentative...")
         attempt += 1
     else:
-        print(f"    ✅ Ratio OK! ({100*non_match_ratio:.1f}% >= 45%)")
-
+        print(f"    ✅ Ratio OK! ({100*non_match_ratio:.1f}% >= 40%)")
 # ============================================================================
 # STATISTIQUES
 # ============================================================================
 
-print(f"\n📈 Statistiques finales (après {attempt} tentative(s)):")
+print(f"\n📈 Statistiques finales:")
 print(f"  - Total paires: {len(matchings_df)}")
 print(f"  - Matches: {matchings_df['est_match'].sum()} ({100*matchings_df['est_match'].mean():.1f}%)")
 print(f"  - Non-matches: {(1-matchings_df['est_match']).sum()} ({100*(1-matchings_df['est_match']).mean():.1f}%)")
+
+print(f"\n📊 Distribution des scores (match_score):")
+print(matchings_df['match_score'].describe())
 
 print(f"\n🐕 Distribution espèce:")
 print(matchings_df.groupby('species')['est_match'].agg(['count', 'sum']))
@@ -337,13 +379,10 @@ print(f"\n🏠 Distribution habitat:")
 print(matchings_df.groupby('type_habitat')['est_match'].agg(['count', 'sum']))
 
 # ============================================================================
-# SAUVEGARDE (SANS les colonnes _label pour le modèle)
+# SAUVEGARDE
 # ============================================================================
 
-# Supprimer les colonnes de labels avant sauvegarde
-output_df = matchings_df.drop(columns=['type_habitat_label', 'species_label', 'taille_label'])
-
-output_df.to_csv(OUTPUT_FILE, index=False)
+matchings_df.to_csv(OUTPUT_FILE, index=False)
 print(f"\n✅ Dataset sauvegardé: {OUTPUT_FILE}")
-print(f"   Shape: {output_df.shape}")
-print(f"   Colonnes: {', '.join(output_df.columns.tolist())}")
+print(f"   Shape: {matchings_df.shape}")
+print(f"   Colonnes: {', '.join(matchings_df.columns.tolist())}")
