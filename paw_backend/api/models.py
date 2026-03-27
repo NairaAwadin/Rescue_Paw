@@ -7,6 +7,7 @@
         - ProfilAdoptant : Données habitat & quiz matching (Vecteurs IA).
         - Refuge : Gestion des établissements et localisation.
         - Animal : Profils comportementaux pour recommandation hybride.
+        - animalSignaled : Signalements d'animaux trouvés/abandonnés pour l'observatoire.
     version : 1.0 - semaine 1
 """
 
@@ -105,3 +106,39 @@ class Animal(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.species})"
+
+class AnimalSignaled(models.Model):
+    # Les types de signalement définis dans ton CDC
+    TYPE_SIGNALEMENT = [
+        ('FOUND', 'J’ai trouvé un animal'),
+        ('ABANDON', 'Je ne peux plus garder mon animal'),
+    ]
+
+    # Le cycle de vie réel pour l'Observatoire
+    STATUT_SUIVI = [
+        ('SIGNALED', 'Signalé'),
+        ('RESCUED', 'Pris en charge (Refuge/Asso)'),
+        ('ADOPTABLE', 'Ouvert à l’adoption'),
+    ]
+
+    # l'animal signalé (Données de base + pour la Heatmap)
+    species = models.CharField(max_length=20, choices=[('DOG', 'Chien'), ('CAT', 'Chat'), ('OTHER', 'Autre')])
+    race = models.CharField(max_length=100, blank=True, help_text="Si connue")
+    photo = models.ImageField(upload_to='signalements/', null=True, blank=True)
+    description = models.TextField("Description / État de santé")
+
+    # localisation (Crucial pour l'observatoire)
+    territoire = models.ForeignKey(Territoire, on_delete=models.SET_NULL, null=True, related_name='signalements')
+    adresse_approximative = models.CharField(max_length=255, help_text="Rue ou quartier")
+
+    # Détails du signalement (Pour le suivi et la catégorisation)
+    type_signalement = models.CharField(max_length=10, choices=TYPE_SIGNALEMENT)
+    status = models.CharField(max_length=15, choices=STATUT_SUIVI, default='SIGNALED')
+    
+    # Si l'animal signalé est pris en charge et devient adoptable, on peut lier le signalement à un profil d'animal réel dans notre base
+    animal_adoption = models.OneToOneField('Animal', on_delete=models.SET_NULL, null=True, blank=True, related_name='origine_signalement')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_type_signalement_display()} - {self.species} ({self.territoire})"
