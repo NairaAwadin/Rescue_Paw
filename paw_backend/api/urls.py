@@ -10,7 +10,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     TerritoireViewSet, AnimalViewSet, RefugeViewSet, ProfilAdoptantViewSet, 
-    AnimalSignaledViewSet, PredictView, RegisterView, MatchingView
+    AnimalSignaledViewSet, PredictView, RegisterView, MatchingView, WellbeingView, SignalementView, ObservatoireView
 )
 
 router = DefaultRouter()
@@ -28,6 +28,9 @@ urlpatterns = [
     
     # API Routes
     path('matching/', MatchingView.as_view(), name='matching'),
+    path('wellbeing/', WellbeingView.as_view(), name='wellbeing'),
+    path('signalement/', SignalementView.as_view(), name='signalement'),
+    path('observatoire/', ObservatoireView.as_view(), name='observatoire'),
     path('', include(router.urls)),
     path('predict/', PredictView.as_view(), name='predict'),
 ]
