@@ -4,7 +4,39 @@
     - Transforme les modèles Django en format JSON pour le Frontend React.
 """
 from rest_framework import serializers
-from .models import Territoire, ProfilAdoptant, Refuge, Animal, AnimalSignaled
+from django.contrib.auth.models import User
+from .models import Territoire, ProfilAdoptant, Refuge, Animal, AnimalSignaled, UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['user_type']
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'profile']
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=6)
+    user_type = serializers.ChoiceField(choices=['ADOPTANT', 'OBSERVATEUR'], default='ADOPTANT')
+    
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'user_type']
+    
+    def create(self, validated_data):
+        user_type = validated_data.pop('user_type', 'ADOPTANT')
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        # Créer le profil utilisateur
+        UserProfile.objects.create(user=user, user_type=user_type)
+        return user
 
 class TerritoireSerializer(serializers.ModelSerializer):
     class Meta:

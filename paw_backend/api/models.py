@@ -14,6 +14,20 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class UserProfile(models.Model):
+    """Profil utilisateur avec type (Adoptant ou Observateur)"""
+    USER_TYPE_CHOICES = [
+        ('ADOPTANT', 'Adoptant'),
+        ('OBSERVATEUR', 'Observateur'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user_type = models.CharField(max_length=15, choices=USER_TYPE_CHOICES, default='ADOPTANT')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.get_user_type_display()}"
+
 class Territoire(models.Model):
     # Identifiant unique géographique
     zip_code = models.CharField("Code Postal", max_length=5, unique=True)
