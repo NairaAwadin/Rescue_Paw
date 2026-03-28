@@ -1,5 +1,5 @@
 """
-    Paw Rescue - Views (Semaine 2)
+    Paw Rescue - Views
     Logique de traitement des requêtes API.
     - RegisterView : Créer un account
     - TerritoireViewSet : CRUD pour les données territoriales (Scores, INSEE, OSM).
@@ -26,6 +26,7 @@ from .serializers import (
     TerritoireSerializer, AnimalSerializer, RefugeSerializer, ProfilAdoptantSerializer, 
     AnimalSignaledSerializer, RegisterSerializer, UserSerializer
 )
+from .permissions import IsAdoptant, IsObservateur
 
 def prepare_prediction_data(profil, animal):
     """
@@ -190,14 +191,10 @@ class RegisterView(APIView):
 
 class MatchingView(APIView):
     """
-    Endpoint pour trouver les meilleurs matchs adoptant-animal.
-    
-    POST /api/matching/
-    Authentification : REQUIS (ADOPTANT)
-    
+    Endpoint pour trouver les meilleurs matchs adoptant-animal
     Retourne les 5 meilleurs matchs.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdoptant]
     
     def post(self, request):
         try:
@@ -267,11 +264,13 @@ class PredictView(APIView):
     Endpoint pour prédire la compatibilité adoptant-animal unique.
     
     POST /api/predict/
+    Authentification : REQUIS (ADOPTANT)
     {
         "profil_adoptant_id": 1,
         "animal_id": 1
     }
     """
+    permission_classes = [IsAdoptant]
     
     def post(self, request):
         try:
@@ -321,37 +320,42 @@ class PredictView(APIView):
 
 
 class TerritoireViewSet(viewsets.ModelViewSet):
-    """CRUD pour les territoires avec leurs scores de bien-être"""
+    """CRUD pour les territoires avec leurs scores de bien-être (public)"""
     queryset = Territoire.objects.all()
     serializer_class = TerritoireSerializer
+    permission_classes = [AllowAny]
 
 class AnimalViewSet(viewsets.ModelViewSet):
-    """CRUD pour les animaux adoptables en refuge"""
+    """CRUD pour les animaux adoptables en refuge (public)"""
     queryset = Animal.objects.all()
     serializer_class = AnimalSerializer
+    permission_classes = [AllowAny]
 
 class RefugeViewSet(viewsets.ModelViewSet):
-    """CRUD pour les refuges et associations"""
+    """CRUD pour les refuges et associations (public)"""
     queryset = Refuge.objects.all()
     serializer_class = RefugeSerializer
+    permission_classes = [AllowAny]
 
 class ProfilAdoptantViewSet(viewsets.ModelViewSet):
-    """Gestion des profils adoptants avec données habitat + quiz"""
+    """Gestion des profils adoptants (private)"""
     queryset = ProfilAdoptant.objects.all()
     serializer_class = ProfilAdoptantSerializer
+    permission_classes = [IsAdoptant]
 
-class AnimalSignaledViewSet(viewsets.ModelViewSet):
-    """Gestion des signalements d'animaux trouvés/abandonnés"""
+class AnimalSignaledViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Gestion des signalements d'animaux trouvés/abandonnés
+    Les observateurs peuvent uniquement consulter les signalements.
+    """
     queryset = AnimalSignaled.objects.all()
     serializer_class = AnimalSignaledSerializer
+    permission_classes = [IsObservateur]
 
 
 class WellbeingView(APIView):
     """
-    Endpoint pour récupérer le score bien-être d'un territoire.
-    
-    GET /api/wellbeing/?zip_code=75001
-    GET /api/wellbeing/?ville=Paris
+    endpoint pour récupérer le score bien-être d'un territoire.
     """
     permission_classes = [AllowAny]
     
@@ -388,10 +392,7 @@ class WellbeingView(APIView):
 
 class SignalementView(APIView):
     """
-    Endpoint pour gérer les signalements anonymes d'animaux.
-    
-    GET /api/signalement/?status=SIGNALED&species=DOG&ville=Paris
-    POST /api/signalement/ - Créer un signalement anonyme
+    endpoint pour gérer les signalements anonymes d'animaux
     """
     permission_classes = [AllowAny]
     
@@ -461,27 +462,11 @@ class SignalementView(APIView):
 
 
 class ObservatoireView(APIView):
-    """
-    Dashboard observatoire pour les utilisateurs OBSERVATEUR.
-    
-    GET /api/observatoire/
-    Authentification: REQUIS (OBSERVATEUR)
-    """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsObservateur]
     
     def get(self, request):
-        # Vérifie que l'utilisateur est observateur
-        try:
-            user_profile = UserProfile.objects.get(user=request.user)
-            if user_profile.user_type != 'OBSERVATEUR':
-                return Response({
-                    'error': 'Accès réservé aux observateurs (OBSERVATEUR)',
-                    'your_type': user_profile.user_type
-                }, status=status.HTTP_403_FORBIDDEN)
-        except UserProfile.DoesNotExist:
-            return Response({
-                'error': 'Profil utilisateur non trouvé'
-            }, status=status.HTTP_404_NOT_FOUND)
+        """Récupère les stats du dashboard observatoire"""
+        user_profile = UserProfile.objects.get(user=request.user)
         
         # Récupère tous les signalements
         signalements = AnimalSignaled.objects.all()
