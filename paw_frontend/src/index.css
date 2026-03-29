@@ -1,17 +1,92 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* palette de couleurs */
-  --color-primary: #B67332;   
-  --color-secondary: #93441A; 
-  --color-accent: #DAAB3A;    
-  --color-cream: #EEE6D8;     
-  --color-surface: #e5e7e6;   
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   
-  --font-poppins: 'Poppins', sans-serif;
+  /* BEIGE PLUME — Backgrounds & surfaces (ventre clair) */
+  --color-beige-50: #FBF8F3;
+  --color-beige-100: #F7F3ED;
+  --color-beige-200: #F0E8DA;
+  --color-beige-300: #E7DCCB;
+  --color-beige-400: #E4D0BA;
+  --color-beige-500: #DDD0BB;
+  --color-beige-600: #C4B59C;
+  --color-beige-700: #A89A8B;
+  --color-beige-800: #8B7D73;
+  --color-beige-900: #6B5D4A;
+  --color-beige-950: #4A423A;
+  
+  /* VERT CANARD — Primaire (confiance, nature) */
+  --color-canard-50: #E8F0EC;
+  --color-canard-100: #D4E6E0;
+  --color-canard-200: #B8D8CF;
+  --color-canard-300: #9ACFC2;
+  --color-canard-400: #7DC1B5;
+  --color-canard-500: #6B9E82;
+  --color-canard-600: #5A8B6F;
+  --color-canard-700: #47785E;
+  --color-canard-800: #38634E;
+  --color-canard-900: #2B6B4F;
+  --color-canard-950: #1A4233;
+  
+  /* TAUPE — Texte & neutralité (plumage du corps) */
+  --color-taupe-50: #F0ECE6;
+  --color-taupe-100: #E3DDD1;
+  --color-taupe-200: #D9D1C7;
+  --color-taupe-300: #C9C1B5;
+  --color-taupe-400: #A89A8B;
+  --color-taupe-500: #9B8D7D;
+  --color-taupe-600: #8A7D71;
+  --color-taupe-700: #7A6F63;
+  --color-taupe-800: #5F5651;
+  --color-taupe-900: #4E463E;
+  --color-taupe-950: #302B26;
+  
+  /* AMBRE BEC — Accent / CTA (bec et pattes orangées) */
+  --color-ambre-50: #FDF2E4;
+  --color-ambre-100: #FCE8CE;
+  --color-ambre-200: #F5D9AA;
+  --color-ambre-300: #F1CB8A;
+  --color-ambre-400: #E8AA4C;
+  --color-ambre-500: #E39C2C;
+  --color-ambre-600: #D68E20;
+  --color-ambre-700: #C47A1E;
+  --color-ambre-800: #A0621A;
+  --color-ambre-900: #8B5A1E;
+  --color-ambre-950: #5A3810;
+  
+  /* Legacy aliases for compatibility */
+  --color-cream: #FBF8F3;
+  --color-anthracite: #302B26;
+  --color-text-primary: #4E463E;
+  --color-text-secondary: #7A6F63;
+  --color-text-muted: #A89A8B;
+  --color-border: #DDD0BB;
+  --color-border-light: #F0E8DA;
+  
+  /* Shadows — Taupe-based */
+  --shadow-card: 0 1px 3px rgba(78,70,62,0.04), 0 1px 2px rgba(78,70,62,0.03);
+  --shadow-card-hover: 0 4px 12px rgba(78,70,62,0.06), 0 2px 4px rgba(78,70,62,0.04);
+  --shadow-bento: 0 0 0 1px rgba(78,70,62,0.05), 0 2px 8px rgba(78,70,62,0.04);
+  
+  /* Radius */
+  --radius-card: 1rem;
+  --radius-bento: 1rem;
+  --radius-pill: 9999px;
 }
 
-html {
-  font-family: var(--font-poppins);
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-beige-50);
+  color: var(--color-taupe-800);
+  -webkit-font-smoothing: antialiased;
 }
+
+.leaflet-container { font-family: var(--font-sans) !important; border-radius: var(--radius-bento); }
+.leaflet-popup-content-wrapper { border-radius: 1rem !important; box-shadow: var(--shadow-card-hover) !important; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-taupe-400); border-radius: 3px; }
