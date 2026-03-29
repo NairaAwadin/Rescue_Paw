@@ -7,7 +7,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TerritoireViewSet, AnimalViewSet, RefugeViewSet, ProfilAdoptantViewSet
+from .views import TerritoireViewSet, AnimalViewSet, RefugeViewSet, ProfilAdoptantViewSet, predict_matching
 
 router = DefaultRouter()
 router.register(r'territoires', TerritoireViewSet)
@@ -17,4 +17,5 @@ router.register(r'profils', ProfilAdoptantViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+     path('predict-match/', predict_matching, name='predict_matching'),
 ]
