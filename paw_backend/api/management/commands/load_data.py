@@ -66,6 +66,7 @@ class Command(BaseCommand):
                     'social_compatibility': bool(row['social_compatibility']),
                     'kid_friendly': bool(row['kid_friendly']),
                     'needs_garden': bool(row['needs_garden']),
+                    'photo': str(row['photo']) if pd.notna(row['photo']) else '',
                     'description': f"Animal de test - {row['race']}",
                     'is_adoptable': True,
                 }

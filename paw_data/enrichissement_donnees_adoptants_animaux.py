@@ -1,109 +1,122 @@
 import pandas as pd
 import numpy as np
+from pathlib import Path
+import random
+import requests
+from PIL import Image
+from io import BytesIO
+
+def download_and_save_image(url, filename, folder='animals'):
+    """Télécharge et sauvegarde une image"""
+    try:
+        media_path = Path(__file__).parent.parent / 'paw_backend' / 'media' / folder
+        media_path.mkdir(parents=True, exist_ok=True)
+        
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            img = Image.open(BytesIO(response.content))
+            filepath = media_path / f'{filename}.jpg'
+            img.save(filepath, 'JPEG')
+            return f'{folder}/{filename}.jpg'
+    except:
+        return None
+    return None
 
 def generer_datasets_adoptants_animaux():
-    """
-    Génère deux datasets pour tests de matching:
-    - adoptants.csv (35 adoptants)
-    - animaux.csv (50 animaux)
-    """
+    """Génère 35 adoptants et 50 animaux avec images"""
     
-    print("="*60)
-    print("GÉNÉRATION DES DATASETS ADOPTANTS & ANIMAUX")
-    print("="*60)
+    # Charge les races
+    animaux_vecteurs = pd.read_csv('donnees_propres/animaux_vecteurs_clean.csv')
+    races_chiens = animaux_vecteurs[animaux_vecteurs['species'] == 'dog']['breed'].unique()
+    races_chats = animaux_vecteurs[animaux_vecteurs['species'] == 'cat']['breed'].unique()
     
-    print("\n📂 Chargement des données sources...")
+    # Charge communes IDF
+    villes = pd.read_csv('donnees_propres/villes_france_clean.csv')
     
-    # Charge les races et villes
-    df_races = pd.read_csv('donnees_propres/animaux_vecteurs_clean.csv')
-    df_villes = pd.read_csv('donnees_propres/villes_france_clean.csv')
-    
-    depts_idf = ['Paris', 'Seine-et-Marne', 'Yvelines', 'Essonne', 'Hauts-de-Seine', 
-                 'Seine-Saint-Denis', 'Val-de-Marne', "Val-d'Oise"]
-    df_villes_idf = df_villes[df_villes['nom_departement'].isin(depts_idf)].reset_index(drop=True)
-    
-    print(f"   - {len(df_races)} races | {len(df_villes_idf)} communes IDF")
-    
-    # ============================================
-    # GÉNÈRE 35 ADOPTANTS
-    # ============================================
-    print("\n👥 Génération de 35 adoptants...")
-    
-    np.random.seed(42)
-    
+    # === ADOPTANTS ===
     adoptants = []
     for i in range(35):
-        type_habitat = np.random.choice(['APT', 'HOUSE', 'FARM'], p=[0.4, 0.45, 0.15])
-        has_garden = 1 if type_habitat in ['HOUSE', 'FARM'] and np.random.random() > 0.3 else 0
-        has_pets = np.random.choice([0, 1], p=[0.7, 0.3])
-        
         adoptants.append({
             'id_adoptant': i,
-            'type_habitat': type_habitat,
-            'has_garden': has_garden,
-            'niv_activite': np.random.randint(1, 4),
-            'has_children': np.random.choice([0, 1], p=[0.6, 0.4]),
-            'has_pets': has_pets,
-            'has_birds': np.random.choice([0, 1], p=[0.85, 0.15]) if has_pets else 0,
-            'has_rodents': np.random.choice([0, 1], p=[0.85, 0.15]) if has_pets else 0,
-            'has_cats': np.random.choice([0, 1], p=[0.75, 0.25]) if has_pets else 0,
-            'has_dogs': np.random.choice([0, 1], p=[0.65, 0.35]) if has_pets else 0,
-            'temps_dispo': np.random.choice([1, 2, 3, 4, 5]),
-            'niv_experience': np.random.randint(1, 4),
-            'code_postal': df_villes_idf.sample(1).iloc[0]['code_postal'],
-            'note_bien_etre': np.random.choice(['A', 'B', 'C', 'D', 'E'])
+            'type_habitat': random.choice(['APT', 'HOUSE', 'FARM']),
+            'has_garden': random.choice([0, 1]),
+            'niv_activite': random.randint(1, 3),
+            'has_children': random.choice([0, 1]),
+            'has_pets': random.choice([0, 1]),
+            'has_birds': random.choice([0, 1]),
+            'has_rodents': random.choice([0, 1]),
+            'has_cats': random.choice([0, 1]),
+            'has_dogs': random.choice([0, 1]),
+            'temps_dispo': random.randint(1, 8),
+            'niv_experience': random.randint(1, 3),
+            'code_postal': random.choice(villes['code_postal'].values),
+            'note_bien_etre': random.choice(['A', 'B', 'C', 'D', 'E']),
         })
     
     df_adoptants = pd.DataFrame(adoptants)
     df_adoptants.to_csv('donnees_propres/adoptants.csv', index=False)
-    print(f"   ✓ {len(df_adoptants)} adoptants (IDs 0-{len(df_adoptants)-1})")
+    print(f"✓ {len(df_adoptants)} adoptants générés")
     
-    # ============================================
-    # GÉNÈRE 50 ANIMAUX
-    # ============================================
-    print("\n🐾 Génération de 50 animaux...")
-    
-    df_dogs = df_races[df_races['species'] == 'dog'].reset_index(drop=True)
-    df_cats = df_races[df_races['species'] == 'cat'].reset_index(drop=True)
-    
+    # === ANIMAUX ===
     animaux = []
-    for i in range(50):
-        if i < 40:
-            race_row = df_dogs.sample(1).iloc[0]
-            species = 'DOG'
-        else:
-            race_row = df_cats.sample(1).iloc[0]
-            species = 'CAT'
-        
-        age = np.random.randint(1, 13)
-        taille_val = str(race_row.get('taille_categorie', 'Small')).lower()
-        taille = 'L' if 'large' in taille_val else 'M' if 'medium' in taille_val else 'S'
-        energy_need = np.random.randint(2, 11)
+    photo_list = []
+    
+    # 40 chiens
+    print("Téléchargement images chiens...")
+    for i in range(40):
+        try:
+            response = requests.get('https://dog.ceo/api/breeds/image/random')
+            if response.status_code == 200:
+                img_url = response.json()['message']
+                filename = download_and_save_image(img_url, f'dog_{i}')
+                photo_list.append(filename)
+        except:
+            photo_list.append(None)
         
         animaux.append({
             'id_animal': i,
-            'age': age,
-            'age_category': 'puppy' if age < 2 else 'senior' if age > 8 else 'adult',
-            'species': species,
-            'race': race_row['breed'],
-            'taille': taille,
-            'energy_need': energy_need,
-            'social_compatibility': int(np.random.choice([0, 1], p=[0.3, 0.7])),
-            'kid_friendly': int(np.random.choice([0, 1], p=[0.2, 0.8])),
-            'needs_garden': 1 if species == 'DOG' and energy_need > 6 else int(np.random.choice([0, 1], p=[0.7, 0.3]))
+            'name': f'Dog_{i}',
+            'species': 'dog',
+            'race': random.choice(races_chiens),
+            'age': random.randint(1, 12),
+            'age_category': random.choice(['puppy', 'adult', 'senior']),
+            'taille': random.choice(['S', 'M', 'L']),
+            'energy_need': random.randint(1, 10),
+            'social_compatibility': random.choice([0, 1]),
+            'kid_friendly': random.choice([0, 1]),
+            'needs_garden': random.choice([0, 1]),
+        })
+    
+    # 10 chats
+    print("Téléchargement images chats...")
+    for i in range(10):
+        try:
+            response = requests.get('https://api.thecatapi.com/v1/images/search')
+            if response.status_code == 200:
+                img_url = response.json()[0]['url']
+                filename = download_and_save_image(img_url, f'cat_{i}')
+                photo_list.append(filename)
+        except:
+            photo_list.append(None)
+        
+        animaux.append({
+            'id_animal': 40 + i,
+            'name': f'Cat_{i}',
+            'species': 'cat',
+            'race': random.choice(races_chats),
+            'age': random.randint(1, 12),
+            'age_category': random.choice(['puppy', 'adult', 'senior']),
+            'taille': random.choice(['S', 'M']),
+            'energy_need': random.randint(1, 8),
+            'social_compatibility': random.choice([0, 1]),
+            'kid_friendly': random.choice([0, 1]),
+            'needs_garden': 0,
         })
     
     df_animaux = pd.DataFrame(animaux)
+    df_animaux['photo'] = photo_list
     df_animaux.to_csv('donnees_propres/animaux.csv', index=False)
-    print(f"   ✓ {len(df_animaux)} animaux (IDs 0-{len(df_animaux)-1})")
-    
-    # ============================================
-    # RÉSUMÉ
-    # ============================================
-    print("\n" + "="*60)
-    print(f"✅ adoptants.csv : {len(df_adoptants)} adoptants")
-    print(f"✅ animaux.csv : {len(df_animaux)} animaux ({(df_animaux['species'] == 'DOG').sum()} chiens, {(df_animaux['species'] == 'CAT').sum()} chats)")
-    print("="*60)
+    print(f"✓ {len(df_animaux)} animaux générés avec images")
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     generer_datasets_adoptants_animaux()
