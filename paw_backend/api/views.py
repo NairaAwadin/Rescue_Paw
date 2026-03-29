@@ -378,6 +378,8 @@ class WellbeingView(APIView):
                 'success': True,
                 'zip_code': territoire.zip_code,
                 'ville': territoire.ville,
+                'latitude': territoire.latitude,
+                'longitude': territoire.longitude,
                 'well_being_score': territoire.well_being_score,
                 'risk_index': territoire.risk_index,
                 'score_factors': territoire.score_factors,

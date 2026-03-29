@@ -33,6 +33,8 @@ class Territoire(models.Model):
     zip_code = models.CharField("Code Postal", max_length=5, unique=True)
     department_code = models.CharField("Département", max_length=3, db_index=True) # Utile pour la Heatmap
     ville = models.CharField("Nom de la Ville", max_length=100)
+    latitude = models.FloatField("Latitude", default=0.0)
+    longitude = models.FloatField("Longitude", default=0.0)
 
     # Données "Froides" INSEE (Features pour l'IA pour le model de risque - rempli par alex via script)
     income_level = models.FloatField("Revenu Médian", default=0.0)

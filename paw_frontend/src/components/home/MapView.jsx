@@ -21,7 +21,7 @@ export default function MapView({ territoire = null }) {
   const mapZoom = 9;
 
   return (
-    <div className="rounded-[var(--radius-bento)] overflow-hidden shadow-[var(--shadow-bento)] border border-beige-200/40">
+    <div className="rounded-[var(--radius-bento)] overflow-hidden shadow-[var(--shadow-bento)] border border-border-light">
       <MapContainer 
         center={mapCenter} 
         zoom={mapZoom} 
