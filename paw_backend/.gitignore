@@ -1,3 +1,5 @@
+.vscode/
+.DS_Store
 # Secrets (IMPORTANT)
 .env
 
@@ -5,6 +7,7 @@
 venv/
 env/
 .venv/
+mon_env/
 
 # Python (fichiers compilés inutiles)
 __pycache__/

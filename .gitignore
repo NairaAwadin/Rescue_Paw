@@ -1,12 +1,13 @@
-
+.vscode/
+.DS_Store
 # Environnement virtuel
 venv/
 env/
 .venv/
+mon_env/
 paw_backend/venv/
 
 #Data & IA
-
 # On bloque tous les fichiers de données lourds et modèles IA
 *.csv
 *.joblib
