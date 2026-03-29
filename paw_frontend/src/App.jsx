@@ -17,12 +17,10 @@ export default function App() {
   const { isLoggedIn, isObservateur, logout } = useAuth();
 
   const navigate = (view) => {
-    // Guard dashboard for observateurs only
     if (view === "dashboard" && !isObservateur) {
       setCurrentView("login");
       return;
     }
-    // Guard profile for logged in users
     if (view === "profile" && !isLoggedIn) {
       setCurrentView("login");
       return;
@@ -36,12 +34,11 @@ export default function App() {
     navigate("matching");
   };
 
-  // Full-screen views (no navbar/footer)
   const fullScreenViews = ["quiz", "dashboard", "login", "register"];
   const isFullScreen = fullScreenViews.includes(currentView);
 
   return (
-    <div className="min-h-screen bg-beige-50 flex flex-col">
+    <div className="min-h-screen bg-cream flex flex-col">
       {!isFullScreen && <Navbar currentView={currentView} onNavigate={navigate} />}
 
       {currentView === "home" && (
