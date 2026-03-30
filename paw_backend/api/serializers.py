@@ -59,7 +59,16 @@ class RefugeSerializer(serializers.ModelSerializer):
 class ProfilAdoptantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfilAdoptant
-        fields = '__all__'
+        fields = [
+            'zip_code', 'type_habitat', 'has_garden', 'niv_activite',
+            'has_children', 'has_pets', 'has_birds', 'has_cats', 'has_dogs',
+            'has_rodents', 'temps_dispo', 'niv_experience'
+        ]
+    
+    def create(self, validated_data):
+        # Associe automatiquement l'utilisateur courant
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
         
 class AnimalSignaledSerializer(serializers.ModelSerializer):
     # Pour afficher le nom de la ville et le code postal du territoire associé
