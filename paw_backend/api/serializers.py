@@ -44,13 +44,18 @@ class TerritoireSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AnimalSerializer(serializers.ModelSerializer):
-    # On ajoute le nom du refuge pour que le front l'affiche
     refuge_name = serializers.ReadOnlyField(source='refuge.name')
+    photo = serializers.SerializerMethodField()
 
     class Meta:
         model = Animal
         fields = '__all__'
-
+    
+    def get_photo(self, obj):
+        if obj.photo:
+            return f"/media/{obj.photo}"
+        return None
+    
 class RefugeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Refuge

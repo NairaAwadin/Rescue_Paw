@@ -31,7 +31,7 @@ function AnimalCard({ animal }) {
       <div className={`relative aspect-[4/3] overflow-hidden ${imgError ? getPlaceholderColor() : "bg-gray-200"}`}>
         {!imgError && photo ? (
           <img
-            src={`/animals/${photo.split('/').pop()}`}
+            src={photo}
             alt={name}
             onError={() => setImgError(true)}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
