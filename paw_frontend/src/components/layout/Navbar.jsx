@@ -68,6 +68,15 @@ export default function Navbar({ currentView, onNavigate }) {
                 {link.label}
               </button>
             ))}
+            
+            {isLoggedIn && (
+              <button
+                onClick={() => onNavigate("mymatches")}
+                className="px-4 py-2 rounded-xl text-sm font-semibold text-taupe-700 hover:text-canard-600 transition cursor-pointer"
+              >
+                Mes matchs
+              </button>
+            )}
           </div>
 
           {/* Auth */}
@@ -123,6 +132,14 @@ export default function Navbar({ currentView, onNavigate }) {
                   {link.label}
                 </button>
               ))}
+              {isLoggedIn && (
+                <button
+                  onClick={() => { onNavigate("mymatches"); setMenuOpen(false); }}
+                  className="px-4 py-3 rounded-xl text-sm font-semibold text-taupe-700 hover:text-canard-600 transition cursor-pointer text-left"
+                >
+                  Mes matchs
+                </button>
+              )}
               <div className="pt-2 px-4 space-y-2">
                 {isLoggedIn ? (
                   <>

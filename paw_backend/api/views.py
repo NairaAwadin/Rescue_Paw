@@ -83,16 +83,9 @@ def prepare_prediction_data(profil, animal):
 def predict_compatibility_ml(profil, animal):
     """
     Prédit la compatibilité avec le modèle ML.
-    
-    Args:
-        profil: ProfilAdoptant instance
-        animal: Animal instance
-    
-    Returns:
-        dict avec score, confidence, is_compatible
+    Retourne un score en pourcentage (0-100).
     """
     try:
-        # Chemin du modèle entraîné
         model_path = os.path.join(
             os.path.dirname(__file__), 
             '..', '..', 'paw_data', 'models', 'matching_model.joblib'
@@ -101,34 +94,30 @@ def predict_compatibility_ml(profil, animal):
         if not os.path.exists(model_path):
             return None
         
-        # Prépare les données
         data_dict = prepare_prediction_data(profil, animal)
         df = pd.DataFrame([data_dict])
         
-        # One-hot encode (même approche que paw_data/Scripts_ML/preparation_donnees_ML.py)
         categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
         if categorical_cols:
             df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
         
-        # Charge et exécute le modèle
         model = joblib.load(model_path)
-        prediction = model.predict(df)[0]
-        confidence = model.predict_proba(df)[0][1] if hasattr(model, 'predict_proba') else None
+        proba = model.predict_proba(df)[0]  # [prob_0, prob_1]
+        score = int(proba[1] * 100)  # Probabilité de classe 1 en pourcentage
         
         return {
-            'score': int(prediction),
-            'confidence': float(confidence) if confidence is not None else None,
-            'is_compatible': bool(prediction == 1),
+            'score': score,
+            'confidence': float(proba[1]),
+            'is_compatible': proba[1] > 0.5,
             'model_type': 'random_forest'
         }
-    
     except Exception as e:
         return None
-
 
 def predict_compatibility_rules(profil, animal):
     """
     Prédiction par règles (fallback quand le modèle ML n'est pas disponible).
+    Retourne un score en pourcentage (0-100).
     
     Args:
         profil: ProfilAdoptant instance
@@ -169,7 +158,7 @@ def predict_compatibility_rules(profil, animal):
     compatibility = 1 if score >= 50 else 0
     
     return {
-        'score': compatibility,
+        'score': score,
         'confidence': score / 100,
         'is_compatible': bool(compatibility == 1),
         'model_type': 'rule_based'

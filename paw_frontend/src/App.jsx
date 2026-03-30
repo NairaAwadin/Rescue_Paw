@@ -4,6 +4,7 @@ import Footer from "./components/layout/Footer";
 import HomePage from "./pages/HomePage";
 import QuizPage from "./pages/QuizPage";
 import MatchingPage from "./pages/MatchingPage";
+import MyMatchesPage from "./pages/MyMatchesPages";
 import SignalementPage from "./pages/SignalementPage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
@@ -22,6 +23,10 @@ export default function App() {
       return;
     }
     if (view === "profile" && !isLoggedIn) {
+      setCurrentView("login");
+      return;
+    }
+    if (view === "mymatches" && !isLoggedIn) {
       setCurrentView("login");
       return;
     }
@@ -59,6 +64,18 @@ export default function App() {
           />
         )}
 
+      {currentView === "mymatches" && (
+        <>
+          <MyMatchesPage
+            onExit={() => navigate("home")}
+            onNavigate={navigate}
+          />
+          <Footer />
+        </>
+      )}
+
+      {currentView === "signalement" && (
+        <>
         {currentView === "signalement" && (
           <SignalementPage onExit={() => navigate("home")} />
         )}
