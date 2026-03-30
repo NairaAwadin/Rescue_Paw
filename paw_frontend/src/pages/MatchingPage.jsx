@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   SlidersHorizontal,
@@ -11,7 +11,7 @@ import {
 import AnimalCard from "../components/matching/AnimalCard";
 import AnimalProfile from "../components/matching/AnimalProfile";
 import Button from "../components/ui/Button";
-import { mockAnimals } from "../data/mockData";
+import { api } from "../api/client";
 
 export default function MatchingPage({
   answers,
@@ -21,20 +21,34 @@ export default function MatchingPage({
 }) {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [speciesFilter, setSpeciesFilter] = useState("ALL");
+  const [animals, setAnimals] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // In production: api.getMatching() → ranked animals from ML model
-  // For now: mock data sorted by match_score
-  const sortedAnimals = useMemo(() => {
-    let filtered = [...mockAnimals];
+  // Récupère les matchs depuis l'API ML
+  useEffect(() => {
+    api.getMatching()
+      .then(data => {
+        // getMatching() retourne {matchs: [...]}
+        const matchedAnimals = data.matchs.map(m => ({
+          ...m.animal,
+          match_score: m.score,
+          confidence: m.confidence,
+          is_compatible: m.is_compatible
+        }));
+        setAnimals(matchedAnimals);
+      })
+      .catch(err => {
+        console.error("Erreur Matching:", err);
+        setAnimals([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-    if (speciesFilter !== "ALL") {
-      filtered = filtered.filter((a) => a.species === speciesFilter);
-    }
+  // Filtre par espèce
+  const sortedAnimals = animals.filter(
+    a => speciesFilter === "ALL" || a.species === speciesFilter
+  );
 
-    return filtered.sort((a, b) => b.match_score - a.match_score);
-  }, [speciesFilter, answers]);
-
-  // ── Detail view ──
   if (selectedAnimal) {
     return (
       <AnimalProfile
@@ -54,7 +68,6 @@ export default function MatchingPage({
   return (
     <div className="min-h-screen bg-beige-50 pt-20 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Header ── */}
         <div className="mb-10">
           <button
             onClick={onExit}
@@ -65,7 +78,6 @@ export default function MatchingPage({
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
-            {/* Title */}
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 bg-canard-50 rounded-xl flex items-center justify-center">
@@ -85,7 +97,6 @@ export default function MatchingPage({
               </p>
             </div>
 
-            {/* Filters */}
             <div className="flex items-center gap-1.5 bg-white border border-beige-200/60 rounded-2xl p-1 shadow-[var(--shadow-card)]">
               {filterOptions.map(({ value, label, icon: Icon }) => (
                 <button
@@ -105,8 +116,11 @@ export default function MatchingPage({
           </div>
         </div>
 
-        {/* ── Results Grid ── */}
-        {sortedAnimals.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-24">
+            <p className="text-taupe-500">Analyse de compatibilité...</p>
+          </div>
+        ) : sortedAnimals.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {sortedAnimals.map((animal) => (
               <AnimalCard
@@ -117,7 +131,6 @@ export default function MatchingPage({
             ))}
           </div>
         ) : (
-          /* ── Empty State ── */
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 bg-beige-100 rounded-2xl flex items-center justify-center mb-5">
               <PawPrint
@@ -127,23 +140,21 @@ export default function MatchingPage({
               />
             </div>
             <h3 className="text-lg font-bold text-taupe-900 mb-2">
-              Aucun animal pour ce filtre
+              Aucun match trouvé
             </h3>
             <p className="text-sm text-taupe-400 max-w-sm mb-6">
-              Essayez d'élargir vos critères pour découvrir plus de compagnons
-              en attente d'une famille.
+              Essayez d'élargir vos critères
             </p>
             <Button
               variant="outline"
               icon={RotateCcw}
               onClick={() => setSpeciesFilter("ALL")}
             >
-              Réinitialiser les filtres
+              Réinitialiser
             </Button>
           </div>
         )}
 
-        {/* ── Footer action ── */}
         <div className="flex items-center justify-center mt-14">
           <button
             onClick={onRestart}
