@@ -45,14 +45,17 @@ export default function SignalementForm({ onSuccess }) {
   /* ── SUCCESS ── */
   if (step === "success") {
     return (
-      <div className="flex flex-col items-center text-center py-16 max-w-md mx-auto">
-        <div className="w-16 h-16 bg-canard-50 rounded-2xl flex items-center justify-center mb-8">
+      <div className="flex flex-col items-center text-center max-w-md mx-auto">
+        <div className="w-16 h-16 bg-canard-50 rounded-2xl flex items-center justify-center">
           <CheckCircle size={32} strokeWidth={1.5} className="text-canard-600" />
         </div>
-        <h2 className="text-2xl font-bold text-taupe-900 mb-3">Merci pour votre signalement</h2>
-        <p className="text-taupe-600 max-w-sm mb-10 leading-relaxed">
-          Votre signalement a été enregistré de manière anonyme. Les refuges et associations de la zone seront notifiés.
+        <div className="h-6"></div>
+        <h2 className="text-2xl font-bold text-taupe-900">Merci pour votre signalement</h2>
+        <div className="h-4"></div>
+        <p className="text-taupe-600 max-w-sm leading-relaxed">
+          Votre signalement a été enregistré de manière anonyme. Les refuges et associations de la zone seront notifiés
         </p>
+        <div className="h-8"></div>
         <Button onClick={onSuccess}>Retour à l'accueil</Button>
       </div>
     );
@@ -61,16 +64,18 @@ export default function SignalementForm({ onSuccess }) {
   /* ── LOCAL HELP ── */
   if (step === "local_help") {
     return (
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-canard-50 rounded-2xl flex items-center justify-center mb-5 mx-auto">
-            <CheckCircle size={32} strokeWidth={1.5} className="text-canard-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-taupe-900 mb-3">Signalement enregistré !</h2>
-          <p className="text-taupe-600">Voici les structures locales qui peuvent aider :</p>
+      <div className="flex flex-col items-center max-w-md mx-auto text-center">
+        <div className="w-16 h-16 bg-canard-50 rounded-2xl flex items-center justify-center">
+          <CheckCircle size={32} strokeWidth={1.5} className="text-canard-600" />
         </div>
+        <div className="h-6"></div>
+        <h2 className="text-2xl font-bold text-taupe-900">Signalement enregistré !</h2>
+        <div className="h-4"></div>
+        <p className="text-taupe-600">Voici les structures locales qui peuvent aider :</p>
 
-        <div className="space-y-3 mb-10">
+        <div className="h-8"></div>
+
+        <div className="space-y-3 w-full">
           {mockRefuges.map((r) => (
             <Card key={r.id} hover padding="p-5">
               <div className="flex items-center gap-4">
@@ -87,9 +92,9 @@ export default function SignalementForm({ onSuccess }) {
           ))}
         </div>
 
-        <div className="text-center">
-          <Button onClick={() => setStep("success")}>Compris, merci</Button>
-        </div>
+        <div className="h-8"></div>
+
+        <Button onClick={() => setStep("success")}>Compris, merci</Button>
       </div>
     );
   }
@@ -97,30 +102,35 @@ export default function SignalementForm({ onSuccess }) {
   /* ── TYPE SELECTION ── */
   if (step === "type") {
     return (
-      <div className="max-w-md mx-auto text-center">
-        <div className="w-16 h-16 bg-ambre-50 rounded-2xl flex items-center justify-center mb-8 mx-auto">
+      <div className="flex flex-col items-center text-center max-w-md mx-auto">
+        <div className="w-16 h-16 bg-ambre-50 rounded-2xl flex items-center justify-center">
           <AlertCircle size={32} strokeWidth={1.5} className="text-ambre-500" />
         </div>
-        <h2 className="text-2xl font-bold text-taupe-900 mb-3">Signaler un animal</h2>
-        <p className="text-taupe-600 mb-10">Ce formulaire est accessible sans compte. Votre signalement est anonyme.</p>
+        <div className="h-6"></div>
+        <h2 className="text-2xl font-bold text-taupe-900">Signaler un animal</h2>
+        <div className="h-4"></div>
+        <p className="text-taupe-600">Ce formulaire est accessible sans compte. Votre signalement est anonyme</p>
+        <div className="h-10"></div>
 
-        <div className="space-y-4">
-          {typeOptions.map((opt) => {
+        <div className="w-full space-y-0">
+          {typeOptions.map((opt, idx) => {
             const Icon = opt.icon;
             return (
-              <button
-                key={opt.value}
-                onClick={() => { setType(opt.value); setStep("form"); }}
-                className={`w-full flex items-center gap-5 p-6 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer hover:shadow-sm ${opt.color}`}
-              >
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                  <Icon size={24} strokeWidth={1.5} className="text-taupe-900" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-taupe-900">{opt.label}</p>
-                  <p className="text-sm text-taupe-400 mt-1">{opt.desc}</p>
-                </div>
-              </button>
+              <div key={opt.value}>
+                <button
+                  onClick={() => { setType(opt.value); setStep("form"); }}
+                  className={`w-full flex items-center gap-5 p-6 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer hover:shadow-sm ${opt.color}`}
+                >
+                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                    <Icon size={24} strokeWidth={1.5} className="text-taupe-900" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-taupe-900">{opt.label}</p>
+                    <p className="text-sm text-taupe-400 mt-1">{opt.desc}</p>
+                  </div>
+                </button>
+                {idx < typeOptions.length - 1 && <div className="h-6"></div>}
+              </div>
             );
           })}
         </div>
@@ -130,21 +140,29 @@ export default function SignalementForm({ onSuccess }) {
 
   /* ── FORM ── */
   return (
-    <div className="max-w-md mx-auto">
+    <div className="flex flex-col items-start max-w-md mx-auto w-full">
       <button
         onClick={() => setStep("type")}
-        className="text-sm text-taupe-400 hover:text-taupe-600 mb-6 cursor-pointer"
+        className="text-sm text-taupe-400 hover:text-taupe-600 cursor-pointer"
       >
         ← Changer de type
       </button>
 
-      <Badge className={`mb-5 ${type === "FOUND" ? "bg-ambre-100 text-ambre-700" : "bg-canard-100 text-canard-700"}`}>
-        {type === "FOUND" ? "Animal trouvé" : "Abandon responsable"}
-      </Badge>
+      <div className="h-4"></div>
 
-      <h2 className="text-xl font-bold text-taupe-900 mb-8">Décrivez la situation</h2>
+      <div className="flex justify-center w-full">
+        <Badge className={`${type === "FOUND" ? "bg-ambre-100 text-ambre-700" : "bg-canard-100 text-canard-700"}`}>
+          {type === "FOUND" ? "Animal trouvé" : "Abandon responsable"}
+        </Badge>
+      </div>
 
-      <div className="space-y-6">
+      <div className="h-6"></div>
+
+      <h2 className="text-2xl font-bold text-taupe-900 text-center w-full">Décrivez la situation</h2>
+
+      <div className="h-8"></div>
+
+      <div className="space-y-6 w-full">
         {/* Species */}
         <div>
           <label className="block text-sm font-semibold text-taupe-900 mb-3">Espèce *</label>
@@ -172,6 +190,8 @@ export default function SignalementForm({ onSuccess }) {
           </div>
         </div>
 
+        <div className="h-4"></div>
+
         {/* Race */}
         <div>
           <label className="block text-sm font-semibold text-taupe-900 mb-2">Race (si connue)</label>
@@ -183,6 +203,8 @@ export default function SignalementForm({ onSuccess }) {
             className="w-full px-4 py-3.5 bg-beige-50 border border-beige-200 rounded-xl text-sm transition-all"
           />
         </div>
+
+        <div className="h-4"></div>
 
         {/* Description */}
         <div>
@@ -196,20 +218,24 @@ export default function SignalementForm({ onSuccess }) {
           />
         </div>
 
+        <div className="h-4"></div>
+
         {/* Ville */}
         <div>
           <label className="block text-sm font-semibold text-taupe-900 mb-2">Ville *</label>
           <div className="relative">
-            <MapPin size={16} strokeWidth={1.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-taupe-400" />
+            <MapPin size={16} strokeWidth={1.5} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-taupe-400" />
             <input
               type="text"
               value={form.ville}
               onChange={(e) => setForm({ ...form, ville: e.target.value })}
               placeholder="Ex: Paris, Lyon…"
-              className="w-full pl-10 pr-4 py-3.5 bg-beige-50 border border-beige-200 rounded-xl text-sm transition-all"
+              className="w-full pl-4 pr-10 py-3.5 bg-beige-50 border border-beige-200 rounded-xl text-sm transition-all"
             />
           </div>
         </div>
+
+        <div className="h-4"></div>
 
         {/* Adresse */}
         <div>
@@ -224,6 +250,8 @@ export default function SignalementForm({ onSuccess }) {
         </div>
 
         {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
+
+        <div className="h-4"></div>
 
         <Button size="lg" className="w-full" disabled={submitting} onClick={handleSubmit}>
           {submitting ? "Envoi en cours…" : "Envoyer le signalement"}

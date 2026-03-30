@@ -36,7 +36,7 @@ export default function QuestionStep({ question, currentAnswer, onAnswer, onNext
     <div className="flex flex-col items-center max-w-lg mx-auto w-full">
 
       {/* Progress bar */}
-      <div className="w-full mb-12">
+      <div className="w-full">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-taupe-400">
             Question {stepIndex + 1}/{totalSteps}
@@ -53,17 +53,24 @@ export default function QuestionStep({ question, currentAnswer, onAnswer, onNext
         </div>
       </div>
 
+      <div className="h-8"></div>
+
       {/* Question text — centered */}
-      <h2 className="text-2xl sm:text-3xl font-bold text-taupe-900 mb-3 text-center leading-tight">
+      <h2 className="text-2xl sm:text-3xl font-bold text-taupe-900 text-center leading-tight">
         {text}
       </h2>
-      <p className="text-taupe-600 text-center mb-12 max-w-md leading-relaxed">
+
+      <div className="h-4"></div>
+
+      <p className="text-taupe-600 text-center max-w-md leading-relaxed">
         {description}
       </p>
 
+      <div className="h-10"></div>
+
       {/* Options grid — centered */}
       <div
-        className={`grid gap-3 w-full mb-12 ${
+        className={`grid gap-3 w-full ${
           options.length <= 2
             ? "grid-cols-2 max-w-xs mx-auto"
             : options.length === 3
@@ -106,6 +113,8 @@ export default function QuestionStep({ question, currentAnswer, onAnswer, onNext
           );
         })}
       </div>
+
+      <div className="h-10"></div>
 
       {/* Navigation — centered */}
       <div className="flex items-center gap-3">

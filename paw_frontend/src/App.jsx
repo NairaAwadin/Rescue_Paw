@@ -6,6 +6,7 @@ import QuizPage from "./pages/QuizPage";
 import MatchingPage from "./pages/MatchingPage";
 import MyMatchesPage from "./pages/MyMatchesPages";
 import SignalementPage from "./pages/SignalementPage";
+import AnimalPage from "./pages/AnimalPage";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -65,13 +66,10 @@ export default function App() {
         )}
 
         {currentView === "mymatches" && (
-          <>
-            <MyMatchesPage
-              onExit={() => navigate("home")}
-              onNavigate={navigate}
-            />
-            <Footer />
-          </>
+          <MyMatchesPage
+            onExit={() => navigate("home")}
+            onNavigate={navigate}
+          />
         )}
 
         {currentView === "signalement" && (
@@ -79,6 +77,10 @@ export default function App() {
             <SignalementPage onExit={() => navigate("home")} />
             <Footer />
           </>
+        )}
+
+        {currentView === "animals" && (
+          <AnimalPage onNavigate={navigate} />
         )}
 
         {currentView === "dashboard" && (

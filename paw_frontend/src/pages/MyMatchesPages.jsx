@@ -34,20 +34,22 @@ export default function MyMatchesPage({ onExit, onNavigate }) {
   }
 
   return (
-    <div className="min-h-screen bg-beige-50 pt-20 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-beige-50 pb-16">
+      <div style={{ marginTop: "120px" }} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={onExit}
-          className="flex items-center gap-2 text-sm font-medium text-taupe-500 hover:text-taupe-800 mb-8"
+          className="flex items-center gap-2 text-sm font-medium text-taupe-500 hover:text-taupe-800 mb-12"
         >
           <ArrowLeft size={18} />
           Retour à l'accueil
         </button>
 
-        <h1 className="text-3xl font-bold text-taupe-900 mb-2">Mes matchs</h1>
-        <p className="text-taupe-500 mb-8">
-          {matchs.length} animal{matchs.length > 1 ? "x" : ""} correspond{matchs.length > 1 ? "ent" : ""} à votre profil
-        </p>
+        <div style={{ marginBottom: "60px" }} className="text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-taupe-900 mb-4">Mes Matchs</h1>
+          <p className="text-lg text-taupe-500">
+            {matchs.length} animal{matchs.length > 1 ? "x" : ""} correspond{matchs.length > 1 ? "ent" : ""} à votre profil
+          </p>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-24">
