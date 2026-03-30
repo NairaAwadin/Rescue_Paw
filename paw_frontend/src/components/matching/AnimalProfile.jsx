@@ -82,34 +82,36 @@ export default function AnimalProfile({ animal, onBack, onLoginRequired }) {
   ];
 
   return (
-    <div className="min-h-screen bg-beige-50 pt-20 pb-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back button */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-sm font-medium text-taupe-500 hover:text-taupe-800 transition-colors duration-200 mb-6 cursor-pointer"
-        >
-          <ArrowLeft size={18} strokeWidth={1.5} />
-          Retour aux résultats
-        </button>
+    <div className="min-h-screen bg-beige-50 pb-16">
+      <div style={{ marginTop: "120px" }} className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center">
+          <div className="w-full max-w-4xl">
+            {/* Back button */}
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-sm font-medium text-taupe-500 hover:text-taupe-800 transition-colors duration-200 mb-6 cursor-pointer"
+            >
+              <ArrowLeft size={18} strokeWidth={1.5} />
+              Retour aux résultats
+            </button>
 
-        {/* ── Main Grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-          {/* Photo Column */}
-          <div className="lg:col-span-3">
-            <div className="relative rounded-[var(--radius-bento)] overflow-hidden shadow-[var(--shadow-bento)]">
-              <img
-                src={photo}
-                alt={name}
-                className="w-full aspect-[4/3] object-cover"
-              />
-              {/* Subtle gradient for immersion */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
-            </div>
-          </div>
+            {/* ── Main Grid ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+              {/* Photo Column */}
+              <div className="lg:col-span-3">
+                <div className="relative rounded-[var(--radius-bento)] overflow-hidden shadow-[var(--shadow-bento)]">
+                  <img
+                    src={photo}
+                    alt={name}
+                    className="w-full aspect-[4/3] object-cover"
+                  />
+                  {/* Subtle gradient for immersion */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent" />
+                </div>
+              </div>
 
-          {/* Info Column */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
+              {/* Info Column */}
+              <div className="lg:col-span-2 flex flex-col gap-4">
             {/* Identity Card */}
             <Card padding="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -217,26 +219,28 @@ export default function AnimalProfile({ animal, onBack, onLoginRequired }) {
               )}
             </Card>
           </div>
-        </div>
+          </div>
 
-        {/* ── Story Section ── */}
-        <Card className="mt-5" padding="p-0">
-          <div className="p-6 pb-2">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 bg-canard-50 rounded-lg flex items-center justify-center">
-                <Heart size={15} strokeWidth={1.5} className="text-canard-600" />
+            {/* ── Story Section ── */}
+            <Card className="mt-5" padding="p-0">
+              <div className="p-6 pb-2">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-8 h-8 bg-canard-50 rounded-lg flex items-center justify-center">
+                    <Heart size={15} strokeWidth={1.5} className="text-canard-600" />
+                  </div>
+                  <h3 className="text-xs font-bold text-taupe-400 uppercase tracking-widest">
+                    Son histoire
+                  </h3>
+                </div>
               </div>
-              <h3 className="text-xs font-bold text-taupe-400 uppercase tracking-widest">
-                Son histoire
-              </h3>
-            </div>
+              <div className="px-6 pb-6">
+                <p className="text-taupe-800 leading-relaxed text-[15px]">
+                  {description}
+                </p>
+              </div>
+            </Card>
           </div>
-          <div className="px-6 pb-6">
-            <p className="text-taupe-800 leading-relaxed text-[15px]">
-              {description}
-            </p>
-          </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

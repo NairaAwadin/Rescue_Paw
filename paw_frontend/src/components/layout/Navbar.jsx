@@ -37,6 +37,7 @@ export default function Navbar({ currentView, onNavigate }) {
 
   const links = [
     { id: "home", label: "Accueil" },
+    { id: "animals", label: "Nos animaux" },
     { id: "quiz", label: "Adopter" },
     { id: "signalement", label: "Signaler" },
     ...(isObservateur ? [{ id: "dashboard", label: "Observatoire" }] : []),
