@@ -64,20 +64,21 @@ export default function App() {
           />
         )}
 
-      {currentView === "mymatches" && (
-        <>
-          <MyMatchesPage
-            onExit={() => navigate("home")}
-            onNavigate={navigate}
-          />
-          <Footer />
-        </>
-      )}
+        {currentView === "mymatches" && (
+          <>
+            <MyMatchesPage
+              onExit={() => navigate("home")}
+              onNavigate={navigate}
+            />
+            <Footer />
+          </>
+        )}
 
-      {currentView === "signalement" && (
-        <>
         {currentView === "signalement" && (
-          <SignalementPage onExit={() => navigate("home")} />
+          <>
+            <SignalementPage onExit={() => navigate("home")} />
+            <Footer />
+          </>
         )}
 
         {currentView === "dashboard" && (
