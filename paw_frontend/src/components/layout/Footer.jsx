@@ -23,7 +23,7 @@ export default function Footer() {
               <img
                 src="/logo.png"
                 alt="RescuePaw"
-                className="h-10 w-auto"
+                className="h-14 w-auto"
                 onError={() => setImgError(true)}
               />
             )}
