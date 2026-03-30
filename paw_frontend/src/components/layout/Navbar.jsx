@@ -54,7 +54,7 @@ export default function Navbar({ currentView, onNavigate }) {
           <Logo onClick={() => onNavigate("home")} />
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-0.5">
+          <div className="hidden md:flex items-center gap-3">
             {links.map((link) => (
               <button
                 key={link.id}
