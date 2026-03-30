@@ -41,62 +41,54 @@ export default function App() {
     <div className="min-h-screen bg-cream flex flex-col">
       {!isFullScreen && <Navbar currentView={currentView} onNavigate={navigate} />}
 
-      {currentView === "home" && (
-        <>
+      <div className="flex-1">
+        {currentView === "home" && (
           <HomePage onNavigate={navigate} />
-          <Footer />
-        </>
-      )}
+        )}
 
-      {currentView === "quiz" && (
-        <QuizPage onComplete={handleQuizComplete} onExit={() => navigate("home")} />
-      )}
+        {currentView === "quiz" && (
+          <QuizPage onComplete={handleQuizComplete} onExit={() => navigate("home")} />
+        )}
 
-      {currentView === "matching" && (
-        <>
+        {currentView === "matching" && (
           <MatchingPage
             answers={quizAnswers}
             onRestart={() => navigate("quiz")}
             onExit={() => navigate("home")}
             onLoginRequired={() => navigate("login")}
           />
-          <Footer />
-        </>
-      )}
+        )}
 
-      {currentView === "signalement" && (
-        <>
+        {currentView === "signalement" && (
           <SignalementPage onExit={() => navigate("home")} />
-          <Footer />
-        </>
-      )}
+        )}
 
-      {currentView === "dashboard" && (
-        <DashboardPage onLogout={logout} onNavigate={navigate} />
-      )}
+        {currentView === "dashboard" && (
+          <DashboardPage onLogout={logout} onNavigate={navigate} />
+        )}
 
-      {currentView === "login" && (
-        <LoginPage
-          onSuccess={() => navigate("home")}
-          onSwitchToRegister={() => navigate("register")}
-          onExit={() => navigate("home")}
-        />
-      )}
+        {currentView === "login" && (
+          <LoginPage
+            onSuccess={() => navigate("home")}
+            onSwitchToRegister={() => navigate("register")}
+            onExit={() => navigate("home")}
+          />
+        )}
 
-      {currentView === "register" && (
-        <RegisterPage
-          onSuccess={() => navigate("home")}
-          onSwitchToLogin={() => navigate("login")}
-          onExit={() => navigate("home")}
-        />
-      )}
+        {currentView === "register" && (
+          <RegisterPage
+            onSuccess={() => navigate("home")}
+            onSwitchToLogin={() => navigate("login")}
+            onExit={() => navigate("home")}
+          />
+        )}
 
-      {currentView === "profile" && (
-        <>
+        {currentView === "profile" && (
           <ProfilePage onNavigate={navigate} />
-          <Footer />
-        </>
-      )}
+        )}
+      </div>
+
+      {!isFullScreen && <Footer />}
     </div>
   );
 }

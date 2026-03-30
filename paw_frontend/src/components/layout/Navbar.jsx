@@ -24,7 +24,7 @@ function Logo({ onClick }) {
       <img
         src="/logo.png"
         alt="RescuePaw"
-        className="h-12 w-auto"
+        className="h-16 w-auto"
         onError={() => setImgError(true)}
       />
     </button>
