@@ -1,52 +1,36 @@
-# 🐾 Rescue Paw
+# Rescue Paw
 
-Une plateforme intelligente qui analyse les données territoriales pour prédire les risques d'abandon, noter le bien-être animal par ville et connecter les futurs adoptants aux refuges les plus adaptés. .
+Rescue Paw est une plateforme web qui aide a mettre en relation les futurs adoptants, les refuges et les animaux, tout en affichant des indicateurs territoriaux comme le score de bien-etre animal par ville
 
-## 🛠️ Installation Initiale (Backend)
-Situé dans le dossier '/paw_backend'. Suivez ces étapes pour configurer votre environnement :
+## Organisation du projet
 
-1. **Entrer dans le dossier :**
-   'cd paw_backend'
+- `paw_backend/` : API Django REST, base de donnees, logique metier et machine learning
+- `paw_frontend/` : interface React/Vite
+- `paw_data/` : donnees, scripts de preparation et modeles ML
 
-2. **Créer et activer l'environnement virtuel :**
-   - **Linux/Mac :** 'python3 -m venv venv && source venv/bin/activate'
-   - **Windows :** 'python -m venv venv && venv\Scripts\activate'
+## Lancement du frontend
 
-3. **Installer les dépendances :**
-   'pip install -r requirements.txt'
+Depuis la racine du projet:
 
-4. **Configurer les variables d'environnement :**
-   - créez le fichier '.env'
-   - Remplissez vos accès PostgreSQL locaux dans le '.env'.
+```bash
+cd paw_frontend
+npm install
+npm run dev
+```
 
-## Configuration de PostgreSQL
+Le front est ensuite disponible sur l'URL affichee par Vite, souvent `http://127.0.0.1:5173`.
 
-Le projet nécessite un serveur PostgreSQL actif.
+## Lancement du backend
 
-### 1. Installation
-- **Windows :** Téléchargez l'installateur sur [postgresql.org](https://www.postgresql.org/download/windows/).
-- **Mac (Simple) :** Téléchargez [Postgres.app](https://postgresapp.com/).
-- **Mac (Expert) :** 'brew install postgresql'
-- **Linux (Fedora) :** 'sudo dnf install postgresql-server'
+Le guide detaille du backend se trouve ici:
 
-### 2. Création de la base de données
-Ouvrez votre terminal SQL ou pgAdmin et exécutez :
-'CREATE DATABASE rescue_paw_db;'
+- [paw_backend/README.md](paw_backend/README.md)
 
-### 3. Migrations Django
-Une fois la base créée et le '.env' rempli, créez les tables :
-'python manage.py migrate'
+Il contient la creation du virtualenv, la configuration PostgreSQL, le fichier `.env`, les migrations, le chargement des donnees et le lancement du serveur Django.
 
-## Lancement Quotidien
+## API
 
-**Pour lancer le serveur:**
-1. 'cd paw_backend'
-2. 'source venv/bin/activate'
-3. 'python manage.py runserver'
+Quand le backend tourne, l'API est accessible sur:
 
-## Frontend (React/Vue)
-Situé dans le dossier '/paw_frontend'
-(Instructions à remplir par Yane)
+- `http://127.0.0.1:8000/api/`
 
-## Connexion API
-L'API est accessible sur : 'http://127.0.0.1:8000/api/'
